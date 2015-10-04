@@ -2,6 +2,7 @@
 import unittest
 from base import Task, Solver, OutputValuesError, TemplateOutputSyntaxError
 import numpy as np
+from time import sleep
 
 class TestBaseTaskClass(unittest.TestCase):
 
@@ -54,6 +55,8 @@ class TestBaseSolverClass(unittest.TestCase):
         
         self.solver = Solver(self.validcodeproblem)
         self.answer = {'result' : 5}
+        self.async_problems = []
+        self.nasynctasks = 200
         
     def test_solver_creation(self):
         solver = Solver(self.validcodeproblem)
@@ -71,10 +74,22 @@ class TestBaseSolverClass(unittest.TestCase):
         
 
     def test_async_solver(self):
+        for i in xrange(self.nasynctasks):
+            self.async_problems.append(Solver(Task('''My name is {{username}}. I have {{total}} $. I want to buy several papers. 
+            Each paper worth is {{paper_cost}}$. How much papers can I buy?''',
+            default_vals={'username':'Dmitry', 'total': 100, 'paper_cost': 20},code='''
+time.sleep(random.random())
+OUTPUTS['result']=INPUTS['total']/INPUTS['paper_cost']'''),preamble = 'import time,random'))
+        for i in xrange(self.nasynctasks):
+            self.async_problems[i].async_solve()
+        while not all(map(lambda x: x.is_solved, self.async_problems)):
+            pass
         self.solver.async_solve()
+        while not self.solver.is_solved:
+            pass
         self.assertEqual(self.validcodeproblem.output_vals, self.answer)
         self.assertTrue(self.solver.is_solved)
-        
+        print 'Average execution time of the task is %s milliseconds'%np.mean(map(lambda x: x.total, self.async_problems))
         
 
 

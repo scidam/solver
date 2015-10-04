@@ -13,13 +13,29 @@ import pickle
 from StringIO import StringIO
   
 
+def get_celery_worker_status():
+    ERROR_KEY = "ERROR"
+    try:
+        from celery import Celery
+        app = Celery()
+        app.config_from_object('celeryconf')
+        insp = app.control.inspect()
+        d = insp.stats()
+        if not d:
+            d = { ERROR_KEY: 'No running Celery workers were found.' }
+    except IOError as e:
+        from errno import errorcode
+        msg = "Error connecting to the backend: " + str(e)
+        if len(e.args) > 0 and errorcode.get(e.args[0]) == 'ECONNREFUSED':
+            msg += ' Check that the RabbitMQ server is running.'
+        d = { ERROR_KEY: msg }
+    except ImportError as e:
+        d = { ERROR_KEY: str(e)}
+    except Exception as x:
+        d = {ERROR_KEY: str(x)}
+    return d
 
-def is_python_variable(my_var):
-    '''Returns True if `my_var` is a valid python variable name.'''
-
-    return True if re.match("[_A-Za-z][_a-zA-Z0-9]*$", my_var) \
-        and not keyword.iskeyword(my_var) else False
-
+WORKER_STATUS_ERROR = True if get_celery_worker_status().get('ERROR', False) else False
 
 #--------------------------------Exceptions definition--------------------------------------
 class AbstractSolverException(Exception):
@@ -47,6 +63,7 @@ class AbstractRenderException(Exception):
 
 class InappropriateSolverTypeError(AbstractSolverException):
     '''Should raised when we use not Solver instances for a problem solution.'''
+
     pass
     
 class TemplateOutputSyntaxError(AbstractRenderException):
@@ -171,9 +188,8 @@ OUTPUTS = {}
         self.start = None
         self.end = None
         self.id = uuid.uuid4().hex
-        
         self._async_obj = None
-        
+       
     def is_solvable(self, silent=True):
         '''Check task solvability.
         
@@ -226,12 +242,26 @@ OUTPUTS = {}
             self.task.output_vals = evalspace.get('OUTPUTS')
     
     def async_solve(self):
-        from tasks import solve
-        self._async_obj = solve.delay(self)
+        '''Try to solve a problem asynchoronously via Celery.'''
+        if WORKER_STATUS_ERROR:
+            self.solve()
+        else:
+            if not self._async_obj:
+                from tasks import solve
+                self.start = datetime.datetime.now()
+                self._async_obj = solve.delay(self)
     
     @property
     def is_solved(self):
-        '''Solution status. When a problem is solved returns true.'''
+        '''Solution status. When a problem is solved returns true.
+        
+        One need to check status of asynchoronous task via `is_solved` before getting the results.
+        '''
+
+        if self._async_obj and not isinstance(self._async_obj, tuple):
+            if self._async_obj.ready():
+                self.task.output_vals, self.start, self.end  = self._async_obj.result
+                return True       
         return True if self.end else False
         
     @property        
@@ -239,8 +269,8 @@ OUTPUTS = {}
         '''Total execution time.'''
         
         if self.start and self.end:
-            return (self.end - self.start).seconds
+            return float((self.end - self.start).microseconds)/1000.0
         else:
-            return datetime.timedelta(0).seconds
+            return float(datetime.timedelta(0).microseconds)/1000.0
 
         

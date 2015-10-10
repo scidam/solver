@@ -133,8 +133,40 @@ class TestTaskRendererClass(unittest.TestCase):
             self.invalidtemplateproblem.render_outputs()
         except TemplateOutputSyntaxError:
             self.assertTrue(True)
-            
 
+
+#-----------------------------------Simple statistical problem. Quasireal case -----------------------------
+
+quasireal_formulation1 = '''
+My task
+=======
+
+Initially, I have two samples. One sample is {{sample1}} and the second is {{sample2}}. I need to perform independent t-Student test
+for these samples. Null hypotesis is the samples have the same mean values. So, I need to get p-value and t-statistic, and check basic
+assumptions for t-test perviously.
+'''
+quasireal_default_vals = {'sample1': [1, 3, 5, 6, 7, 4, 3,4,2, 1]  }
+
+
+
+
+
+#-----------------------------------------------------------------------------------------------------------
+
+
+
+
+class TestStudentTtestClass(unittest.TestCase):
+    self.validcodeproblem = Task('''I have two samples. Fir {{username}}. I have ${{total}}. I want to buy several papers. 
+            Each paper worth is ${{paper_cost}}. How much papers can I buy?''',
+            default_vals={'username':'Dmitry', 'total': 100, 'paper_cost': 20},
+            code='''OUTPUTS['result']=INPUTS['total']/INPUTS['paper_cost']''', 
+            solution_template='''Your answer is ${{result}}.''')
+
+
+        
+        
+        
         
 if __name__ == '__main__':
     unittest.main()

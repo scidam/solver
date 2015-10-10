@@ -193,7 +193,7 @@ OUTPUTS = {}
     def is_solvable(self, silent=True):
         '''Check task solvability.
         
-        Solvable task should have either emptry or compilable code.
+        Solvable task should have either empty or compilable code.
         '''
         
         if not self.task.code:
@@ -273,4 +273,3 @@ OUTPUTS = {}
         else:
             return float(datetime.timedelta(0).microseconds)/1000.0
 
-        

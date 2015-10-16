@@ -201,7 +201,8 @@ else:
     OUTPUTS['p_val_mann'] = None
     OUTPUTS['p_val_classic'] = None
     if (st.shapiro(sample1)[1]>=0.05) and (st.shapiro(sample2)[1]>=0.05):
-        OUTPUTS['p_val_classic'] = st.ttest_ind(sample1, sample2)
+        res = st.ttest_ind(sample1, sample2)
+        OUTPUTS['p_val_classic'] = res[1]
     else:
         res = st.mannwhitneyu(sample1, sample2)
         OUTPUTS['p_val_mann'] = res[1]
@@ -223,6 +224,8 @@ class TestUTtestClass(unittest.TestCase):
     #TODO: ttest and utest not working with celery! scipy objects could not be pickled! 
     def test_ttest(self):
         self.solver.async_solve()
+        while not self.solver.is_solved:
+            pass
         self.ttestproblem.render_outputs()
         if self.ttestproblem.output_vals['error']:
             print("SciPy not installed. t-test is aborted.")
@@ -231,6 +234,8 @@ class TestUTtestClass(unittest.TestCase):
         
     def test_mann(self):
         self.solverm.async_solve()
+        while not self.solverm.is_solved:
+            pass
         self.mannproblem.render_outputs()
         if self.mannproblem.output_vals['error']:
             print("SciPy not installed. t-test is aborted.")

@@ -120,6 +120,7 @@ class Task:
         elif not self._template_output_error and not self._all_output_vars:
             self.output = self._solution_template
         elif self._all_output_vars and not self._all_output_vars.issubset(set(self.output_vals.keys())):
+            print self._all_output_vars, self.output_vals.keys()
             raise OutputValuesError('Not all variables defined in `output_vals`.')
         else:
             self.output = ''

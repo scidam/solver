@@ -143,28 +143,94 @@ My task
 
 Initially, I have two samples. One sample is {{sample1}} and the second is {{sample2}}. I need to perform independent t-Student test
 for these samples. Null hypotesis is the samples have the same mean values. So, I need to get p-value and t-statistic, and check basic
-assumptions for t-test perviously.
+assumptions for t-test, perviously. Next thing I need to do is performing test for sample normality. If all samples come from normal distribution,
+I should make T-student test and print the results. If one sample or both come from non-normal distribution, I should use one of non-parametric tests.
 '''
-quasireal_default_vals = {'sample1': [1, 3, 5, 6, 7, 4, 3,4,2, 1]  }
+quasireal_default_vals = {'sample1': np.random.randn(100), 'sample2':np.random.randn(100)}
+
+quasireal_solution1 = '''
+{% if error %}
+ERROR
+=====
+
+Internal error has rised. Your problem could not be solved (now).
+Try to solve it later (when necessary modules will be installed).
+
+System message: 
+===============
+{{error}}
+{% else %}
+ You have two samples of sizes {{sample1|length}} and {{sample2|length}}. Null hypotesis for these samples is formulated as follows: means of sample1 and sample2 are equal.
+ The following scheme of statistical analysis was performed: 1) tests for normality for two samples; 2) if both samples "come" from normal distribution (hypotesis of normality wasn't rejected), 
+ independent Student t-test was applied. 3) if one or both sample come from non-normal distribution, Mann-Whitney U-test was applied. 
+ 
+ {% if p_val_mann %}
+    Results of Mann-Whitney U-test:
+     p-value is {{p_val_mann}}
+     testing code: suejk32kjgsdfsd
+ {% elif p_val_classic %}
+    Results of independent Student t-test:
+    p-value is {{p_val_classic}}
+    testing code: htfldkwdjsnak234
+ {% endif %}
+{% endif %}
+'''
+
+quasireal_preamble1 = '''
+ERROR=""
+try:
+    import scipy.stats as st
+except ImportError:
+    ERROR = "Import Error: Scipy module is not installed."
+
+'''
 
 
+quasireal_code1 = '''
+sample1 = INPUTS['sample1']
+sample2 = INPUTS['sample2']
 
+OUTPUTS['error'] = ''
+if ERROR:
+    OUTPUTS['error'] = ERROR
+else:
+#Solution block
+    OUTPUTS['sample1'] = sample1
+    OUTPUTS['sample2'] = sample2
+    try:
+        if (st.shapiro(sample1)[1]>=0.05) and (st.shapiro(sample2)[1]>=0.05):
+            OUTPUTS['p_val_classic'] = st.ttest_ind(sample1, sample2)
+        else:
+            res = st.mannwhitneyu(sample1, sample2)
+            OUTPUTS['p_val_mann'] = res[1]
+    except:
+        OUTPUTS['error'] = "Unknown internal error"
+
+'''
 
 
 #-----------------------------------------------------------------------------------------------------------
+class TestUTtestClass(unittest.TestCase):
 
-
-
-
-class TestStudentTtestClass(unittest.TestCase):
-    self.validcodeproblem = Task('''I have two samples. Fir {{username}}. I have ${{total}}. I want to buy several papers. 
-            Each paper worth is ${{paper_cost}}. How much papers can I buy?''',
-            default_vals={'username':'Dmitry', 'total': 100, 'paper_cost': 20},
-            code='''OUTPUTS['result']=INPUTS['total']/INPUTS['paper_cost']''', 
-            solution_template='''Your answer is ${{result}}.''')
-
-
+    def setUp(self):
+        self.ttestproblem = Task(quasireal_formulation1, default_vals=quasireal_default_vals,
+            code=quasireal_code1, solution_template=quasireal_solution1)
+        self.solver = Solver(self.ttestproblem, preamble=quasireal_preamble1)
+        quasireal_default_vals.update({'sample1': np.random.rand(100), 'sample2': np.random.rand(100)})
+        self.mannproblem = Task(quasireal_formulation1, default_vals=quasireal_default_vals,
+            code=quasireal_code1, solution_template=quasireal_solution1)
+        self.solverm = Solver(self.mannproblem, preamble=quasireal_preamble1)
         
+    def test_ttest(self):
+        self.solver.solve()
+        self.ttestproblem.render_outputs()
+        self.assertIn('htfldkwdjsnak234', self.ttestproblem.output)
+        
+    def test_mann(self):
+        self.solverm.solve()
+        self.mannproblem.render_outputs()
+        self.assertIn('suejk32kjgsdfsd', self.mannproblem.output)
+            
         
         
         

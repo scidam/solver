@@ -1,8 +1,9 @@
-
 import unittest
-from base import Task, Solver, OutputValuesError, TemplateOutputSyntaxError
+from expts import OutputValuesError, TemplateOutputSyntaxError
+from base import Task, Solver
 import numpy as np
 from time import sleep
+import warnings
 
 class TestBaseTaskClass(unittest.TestCase):
 
@@ -36,9 +37,6 @@ class TestBaseTaskClass(unittest.TestCase):
         self.assertFalse(self.incorrect_problem1.is_state_correct())
 
 
-
-
-
 class TestBaseSolverClass(unittest.TestCase):
     
     def setUp(self):
@@ -61,7 +59,7 @@ class TestBaseSolverClass(unittest.TestCase):
     def test_solver_creation(self):
         solver = Solver(self.validcodeproblem)
         unsolver = Solver(self.notsolvableproblem)
-        self.assertEqual(solver.total, 0)
+        self.assertIsNone(solver.total)
         self.assertTrue(solver.is_solvable(silent=False))
         self.assertFalse(unsolver.is_solvable())
         
@@ -78,7 +76,7 @@ class TestBaseSolverClass(unittest.TestCase):
             self.async_problems.append(Solver(Task('''My name is {{username}}. I have {{total}} $. I want to buy several papers. 
             Each paper worth is {{paper_cost}}$. How much papers can I buy?''',
             default_vals={'username':'Dmitry', 'total': 100, 'paper_cost': 20},code='''
-time.sleep(random.random())
+#time.sleep(random.random())
 OUTPUTS['result']=INPUTS['total']/INPUTS['paper_cost']'''),preamble = 'import time,random'))
         for i in xrange(self.nasynctasks):
             self.async_problems[i].async_solve()
@@ -125,10 +123,11 @@ class TestTaskRendererClass(unittest.TestCase):
         self.inv_temp.solve()
         self.validcodeproblem.render_outputs()
         self.assertEqual(self.validcodeproblem.output, 'Your answer is $5.')
-        try:    
+        
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
             self.invalidcodeproblem.render_outputs()
-        except OutputValuesError:
-            self.assertTrue(True)
+            assert issubclass(w[-1].category, SyntaxWarning)
         try:
             self.invalidtemplateproblem.render_outputs()
         except TemplateOutputSyntaxError:
@@ -175,6 +174,8 @@ System message:
  {% endif %}
 {% endif %}
 '''
+#quasireal_solution1=''' {{error}}'''
+
 
 quasireal_preamble1 = '''
 ERROR=""
@@ -194,17 +195,15 @@ OUTPUTS['error'] = ''
 if ERROR:
     OUTPUTS['error'] = ERROR
 else:
-#Solution block
     OUTPUTS['sample1'] = sample1
     OUTPUTS['sample2'] = sample2
-    try:
-        if (st.shapiro(sample1)[1]>=0.05) and (st.shapiro(sample2)[1]>=0.05):
-            OUTPUTS['p_val_classic'] = st.ttest_ind(sample1, sample2)
-        else:
-            res = st.mannwhitneyu(sample1, sample2)
-            OUTPUTS['p_val_mann'] = res[1]
-    except:
-        OUTPUTS['error'] = "Unknown internal error"
+    OUTPUTS['p_val_mann'] = None
+    OUTPUTS['p_val_classic'] = None
+    if (st.shapiro(sample1)[1]>=0.05) and (st.shapiro(sample2)[1]>=0.05):
+        OUTPUTS['p_val_classic'] = st.ttest_ind(sample1, sample2)
+    else:
+        res = st.mannwhitneyu(sample1, sample2)
+        OUTPUTS['p_val_mann'] = res[1]
 
 '''
 
@@ -216,8 +215,8 @@ class TestUTtestClass(unittest.TestCase):
         self.ttestproblem = Task(quasireal_formulation1, default_vals=quasireal_default_vals,
             code=quasireal_code1, solution_template=quasireal_solution1)
         self.solver = Solver(self.ttestproblem, preamble=quasireal_preamble1)
-        quasireal_default_vals.update({'sample1': np.random.rand(100), 'sample2': np.random.rand(100)})
-        self.mannproblem = Task(quasireal_formulation1, default_vals=quasireal_default_vals,
+        quasireal_default_vals1 = {'sample1': np.random.rand(100), 'sample2': np.random.rand(100)}
+        self.mannproblem = Task(quasireal_formulation1, default_vals=quasireal_default_vals1,
             code=quasireal_code1, solution_template=quasireal_solution1)
         self.solverm = Solver(self.mannproblem, preamble=quasireal_preamble1)
         

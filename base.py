@@ -1,4 +1,71 @@
 # -*- coding: utf-8 -*-
+'''
+A simple problem solver.
+
+This module provide easy way to solve various problems require
+calculations. Lets imagine one have a problem formulated in
+text file or one of widespread template language. Some places
+within the problem formulation coincide to variables. To
+solve the problem one need to define output template (used to
+render solution), write code that exploits input variables,
+setup output variables and render the solution template.
+With help of solver classes these steps of getting a problem solution
+can be easily handled.
+
+Solver features:
+    * arbitrary and independent input and output markups,
+      used in problem formulation and solution templates.
+    * ability of asynchronous problem solving (Celery need to be installed).
+    * heuristic testing of problem solvability.
+    * use all of Python computational ability to solve your problems.
+    * use jinja2 template language to produce dynamic parts of problem
+      formulation / problem solution.
+
+:Example:
+
+Test problem (as user could formulate it). My name is Dmitry. I have 100 $.
+I want to buy several papers. Each paper worth is 5 $. How many papers can
+I buy?
+
+Test problem  (abstraction level).
+
+test_problem_template_formulation = """
+My name is {{username}}. I have {{total}} $. 
+I want to buy several papers. Each paper worth is {{paper_cost}}$.
+How many papers can I buy?
+"""
+
+test_problem_solution_code = """
+OUTPUTS['result']=INPUTS['total']-/INPUTS['paper_cost']
+OUTPUTS['name'] = INPUTS['username']
+"""
+
+test_problem_output_template="""
+My name is {{name}} and answer is {{result}}.
+"""
+
+from solver import Task, Solver
+
+task = Task(test_problem_template_formulation,
+            default_vals={'username': 'Dmitry',
+            'total': 100, 'paper_cost': 20},
+            solution_template=test_problem_output_template,
+            code = test_problem_solution_code
+            )
+solution = Solver(task)
+
+# solve the problem
+solution.solve()
+
+# or, one can try to solve problem asynchronously
+# if error occur, .solve() method will be invoked.
+solution.async_solve()
+
+#Prior to get results, check for problem solution
+TODO: Documentation need to be finished.... 
+
+'''
+
 from StringIO import StringIO
 import ast
 import datetime

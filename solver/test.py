@@ -4,7 +4,7 @@ import unittest
 import warnings
 
 from .base import Task, Solver
-from .expts import TemplateOutputSyntaxError
+from .expts import TemplateOutputSyntaxError, UnsolvableProblem
 import numpy as np
 
 
@@ -85,6 +85,12 @@ class TestBaseSolverClass(unittest.TestCase):
         self.assertIsNone(solver.total)
         self.assertTrue(solver.is_solvable(silent=False))
         self.assertFalse(unsolver.is_solvable())
+        unsolable_rise = False
+        try:
+            unsolver.solve()
+        except UnsolvableProblem:
+            unsolable_rise = True
+        self.assertTrue(unsolable_rise)
 
     def test_solver(self):
         self.solver.solve()

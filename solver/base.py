@@ -6,8 +6,7 @@ This module provide easy way to solve various problems require
 calculations. Lets imagine one have a problem formulated in
 a text file using widespread template language. Some places
 within the problem formulation text coincide to variables,
-that have default values. What does 
-`to solve a problem` means in this context? 
+that have default values. What does `to solve a problem` means in this context?
 To solve a problem one need
 to define output template (used to render solution), write code
 that exploits input variables,
@@ -81,7 +80,7 @@ import pickle
 import uuid
 import warnings
 
-from .expts import TemplateOutputSyntaxError
+from .expts import TemplateOutputSyntaxError, UnsolvableProblem
 from jinja2 import Environment, Template
 from jinja2.exceptions import TemplateSyntaxError
 from jinja2.meta import find_undeclared_variables
@@ -281,9 +280,9 @@ OUTPUTS = {}
 
 
         '''
-        # TODO: Undefined behaviour on invalid problems
+
         if not self.is_solvable():
-            raise NotImplementedError
+            raise UnsolvableProblem
 
         if six.PY3:
             a_task_serial = BytesIO()
@@ -291,7 +290,6 @@ OUTPUTS = {}
         else:
             a_task_serial = StringIO()
             pickle.dump(self.task.default_vals, a_task_serial)
-
         a_task_serial.seek(0)
         pcode = ast.parse(self._code, mode='exec')
         transformer = ast.NodeTransformer()
@@ -324,6 +322,7 @@ OUTPUTS = {}
         If Celery is not installed, the function tries
         to get a solution with solve method.
         '''
+
         if WORKER_STATUS_ERROR:
             self.solve()
         else:
@@ -344,7 +343,6 @@ OUTPUTS = {}
             if self._async_obj.ready():
                 self.task.output_vals, self.start,\
                     self.end = self._async_obj.result
-                return True
         return True if self.end else False
 
     @property

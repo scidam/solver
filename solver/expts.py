@@ -32,6 +32,10 @@ class InappropriateSolverTypeError(AbstractSolverException):
     pass
 
 
+class UnsolvableProblem(AbstractSolverException):
+    def __init__(self):
+        self.msg = "Could not parse your code block. Check it for correctness."
+
 
 class TemplateOutputSyntaxError(AbstractRenderException):
     '''Raised if output template includes syntax errors'''

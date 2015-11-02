@@ -4,18 +4,21 @@ A simple problem solver.
 
 This module provide easy way to solve various problems require
 calculations. Lets imagine one have a problem formulated in
-text file or one of widespread template language. Some places
-within the problem formulation coincide to variables. To
-solve the problem one need to define output template (used to
-render solution), write code that exploits input variables,
-setup output variables and render the solution template.
+a text file using widespread template language. Some places
+within the problem formulation text coincide to variables,
+that have default values. What does 
+`to solve a problem` means in this context? 
+To solve a problem one need
+to define output template (used to render solution), write code
+that exploits input variables,
+setup output variables in the code and render the solution template.
 With help of solver classes these steps of getting a problem solution
 can be easily handled.
 
 Solver features:
     * arbitrary and independent input and output markups,
       used in problem formulation and solution templates.
-    * ability of asynchronous problem solving (Celery need to be installed).
+    * ability of asynchronous problem solving (Celery is required).
     * heuristic testing of problem solvability.
     * use all of Python computational ability to solve your problems.
     * use jinja2 template language to produce dynamic parts of problem
@@ -23,64 +26,55 @@ Solver features:
 
 :Example:
 
-Test problem (as user could formulate it). My name is Dmitry. I have 100 $.
-I want to buy several papers. Each paper worth is 5 $. How many papers can
-I buy?
+    Test problem. My name is Dmitry. I have 100 $.
+    I want to buy several papers. Each paper worth is 5 $. How many papers can
+    I buy?
 
-Test problem  (abstraction level).
+    Test problem  (abstraction level) ::
 
-test_problem_template_formulation = """
-My name is {{username}}. I have {{total}} $. 
-I want to buy several papers. Each paper worth is {{paper_cost}}$.
-How many papers can I buy?
-"""
+    test_problem_template_formulation = """
+    My name is {{username}}. I have {{total}} $.
+    I want to buy several papers. Each paper worth is {{paper_cost}}$.
+    How many papers can I buy?
+    """
 
-test_problem_solution_code = """
-OUTPUTS['result']=INPUTS['total']-/INPUTS['paper_cost']
-OUTPUTS['name'] = INPUTS['username']
-"""
+    test_problem_solution_code = """
+    OUTPUTS['result']=INPUTS['total']/INPUTS['paper_cost']
+    OUTPUTS['name'] = INPUTS['username']
+    """
 
-test_problem_output_template="""
-My name is {{name}} and answer is {{result}}.
-"""
+    test_problem_output_template="""
+    My name is {{name}} and answer is {{result}}.
+    """
 
-from solver import Task, Solver
+    from solver import Task, Solver
 
-task = Task(test_problem_template_formulation,
-            default_vals={'username': 'Dmitry',
-            'total': 100, 'paper_cost': 20},
-            solution_template=test_problem_output_template,
-            code = test_problem_solution_code
-            )
-solution = Solver(task)
+    task = Task(test_problem_template_formulation,
+                default_vals={'username': 'Dmitry',
+                'total': 100, 'paper_cost': 20},
+                solution_template=test_problem_output_template,
+                code = test_problem_solution_code
+                )
+    psolver = Solver(task)
 
-# solve the problem
-solution.solve()
+    # solve the problem
+    psolver.solve()
 
-# or, one can try to solve problem asynchronously
-# if error occur, .solve() method will be invoked.
-solution.async_solve()
+    # or, you can try to solve problem asynchronously instead
+    # if error occur, .solve() method will be invoked by default.
+    psolver.async_solve()
 
-#Prior to get results, check for problem solution
-TODO: Documentation need to be finished.... 
+    #Prior to get results, check for problem solution is ready
+    #(This step is required, when solving problem asynchronously)
+    if psolver.is_solved:
+        task.render_outputs() # Render output template
+        print(task.output) # Print renedered template or do something else
 
+
+Tested with python 2.7 and python 3.4.
 '''
 
-import sys
-
-if sys.version_info[0] == 3:
-    PY3 = True
-elif sys.version_info[:2] == (2, 7):
-    PY3 = False
-else:
-    raise SystemExit('Current python version (%s) \
-is not supported by Solver' % sys.version_info[:2])
-
-if PY3:
-    from io import BytesIO
-else:
-    from StringIO import StringIO
-
+import six
 import ast
 import datetime
 import pickle
@@ -92,8 +86,10 @@ from jinja2 import Environment, Template
 from jinja2.exceptions import TemplateSyntaxError
 from jinja2.meta import find_undeclared_variables
 
-import six
-
+if six.PY3:
+    from io import BytesIO
+else:
+    from StringIO import StringIO
 
 
 def get_celery_worker_status():
@@ -214,6 +210,8 @@ class Task:
 
 
 class Solver:
+    '''Main class for getting problem solutions.'''
+
     def_input_code_PY2 = '''
 import pickle
 from StringIO import StringIO
@@ -236,8 +234,7 @@ INPUTS = pickle.load(_tmpvar)
 
 OUTPUTS = {}
 '''
-    def_input_code = def_input_code_PY3 if PY3\
-                     else def_input_code_PY2
+    def_input_code = def_input_code_PY3 if six.PY3 else def_input_code_PY2
 
     def __init__(self, task, preamble='', postamble=''):
         '''Create a solver instance.'''
@@ -256,9 +253,11 @@ OUTPUTS = {}
         self._async_obj = None
 
     def is_solvable(self, silent=True):
-        '''Check task solvability.
+        '''Heuristic test for a task solvability.
 
         Solvable task should have either empty or compilable code.
+        This function tries to parse code-block of your problem with
+        ``ast`` module
         '''
 
         if not self.task.code:
@@ -278,11 +277,15 @@ OUTPUTS = {}
             return retvalue
 
     def solve(self):
+        '''Solve current problem.
 
+
+        '''
+        # TODO: Undefined behaviour on invalid problems
         if not self.is_solvable():
             raise NotImplementedError
 
-        if PY3:
+        if six.PY3:
             a_task_serial = BytesIO()
             pickle.dump(self.task.default_vals, a_task_serial)
         else:
@@ -297,7 +300,7 @@ OUTPUTS = {}
             if isinstance(item, ast.Assign):
                 if any(map(lambda x: getattr(x, 'id', None) == '_raw_input',
                            item.targets)):
-                    if PY3:
+                    if six.PY3:
                         item.value = ast.Bytes(a_task_serial.read())
                     else:
                         item.value = ast.Str(a_task_serial.read())
@@ -316,7 +319,11 @@ OUTPUTS = {}
             self.task.output_vals = evalspace.get('OUTPUTS')
 
     def async_solve(self):
-        '''Try to solve a problem asynchoronously via Celery.'''
+        '''Try to solve a problem asynchoronously via Celery.
+
+        If Celery is not installed, the function tries
+        to get a solution with solve method.
+        '''
         if WORKER_STATUS_ERROR:
             self.solve()
         else:
@@ -342,7 +349,7 @@ OUTPUTS = {}
 
     @property
     def total(self):
-        '''Total execution time.'''
+        '''Total execution time in milliseconds.'''
 
         if self.start and self.end:
             return float((self.end - self.start).microseconds)/1000.0

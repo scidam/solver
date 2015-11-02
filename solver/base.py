@@ -87,7 +87,7 @@ import pickle
 import uuid
 import warnings
 
-from expts import TemplateOutputSyntaxError
+from .expts import TemplateOutputSyntaxError
 from jinja2 import Environment, Template
 from jinja2.exceptions import TemplateSyntaxError
 from jinja2.meta import find_undeclared_variables

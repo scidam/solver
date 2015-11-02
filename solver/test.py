@@ -3,8 +3,8 @@ from __future__ import print_function
 import unittest
 import warnings
 
-from base import Task, Solver
-from expts import TemplateOutputSyntaxError
+from .base import Task, Solver
+from .expts import TemplateOutputSyntaxError
 import numpy as np
 
 

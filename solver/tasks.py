@@ -1,8 +1,8 @@
 
-from base import Solver
+from .base import Solver
 import datetime
 from celery import Celery
-from expts import InappropriateSolverTypeError 
+from .expts import InappropriateSolverTypeError 
 
 app = Celery()
 app.config_from_object('celeryconf')

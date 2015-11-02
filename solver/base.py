@@ -66,7 +66,21 @@ TODO: Documentation need to be finished....
 
 '''
 
-from StringIO import StringIO
+import sys
+
+if sys.version_info[0] == 3:
+    PY3 = True
+elif sys.version_info[:2] == (2, 7):
+    PY3 = False
+else:
+    raise SystemExit('Current python version (%s) \
+is not supported by Solver' % sys.version_info[:2])
+
+if PY3:
+    from io import BytesIO
+else:
+    from StringIO import StringIO
+
 import ast
 import datetime
 import pickle
@@ -77,6 +91,9 @@ from expts import TemplateOutputSyntaxError
 from jinja2 import Environment, Template
 from jinja2.exceptions import TemplateSyntaxError
 from jinja2.meta import find_undeclared_variables
+
+import six
+
 
 
 def get_celery_worker_status():
@@ -197,7 +214,7 @@ class Task:
 
 
 class Solver:
-    def_input_code = '''
+    def_input_code_PY2 = '''
 import pickle
 from StringIO import StringIO
 
@@ -208,6 +225,19 @@ INPUTS = pickle.load(_tmpvar)
 
 OUTPUTS = {}
     '''
+    def_input_code_PY3 = '''
+import pickle
+from io import BytesIO
+
+_raw_input = b''
+_tmpvar = BytesIO(_raw_input)
+
+INPUTS = pickle.load(_tmpvar)
+
+OUTPUTS = {}
+'''
+    def_input_code = def_input_code_PY3 if PY3\
+                     else def_input_code_PY2
 
     def __init__(self, task, preamble='', postamble=''):
         '''Create a solver instance.'''
@@ -216,8 +246,8 @@ OUTPUTS = {}
         self.preamble = preamble
         self.postamble = postamble  # NOTE: currently not used.
         self._code = '# -*- coding: utf-8 -*- \n\n' + self.preamble +\
-                     '\n\n' + Solver.def_input_code + '\n\n' +\
-                     self.task.code + '\n\n' + self.postamble
+            '\n\n' + Solver.def_input_code + '\n\n' +\
+            self.task.code + '\n\n' + self.postamble
 
         self.created = datetime.datetime.now()
         self.start = None
@@ -252,8 +282,13 @@ OUTPUTS = {}
         if not self.is_solvable():
             raise NotImplementedError
 
-        a_task_serial = StringIO()
-        pickle.dump(self.task.default_vals, a_task_serial)
+        if PY3:
+            a_task_serial = BytesIO()
+            pickle.dump(self.task.default_vals, a_task_serial)
+        else:
+            a_task_serial = StringIO()
+            pickle.dump(self.task.default_vals, a_task_serial)
+
         a_task_serial.seek(0)
         pcode = ast.parse(self._code, mode='exec')
         transformer = ast.NodeTransformer()
@@ -262,13 +297,16 @@ OUTPUTS = {}
             if isinstance(item, ast.Assign):
                 if any(map(lambda x: getattr(x, 'id', None) == '_raw_input',
                            item.targets)):
-                    item.value = ast.Str(a_task_serial.read())
+                    if PY3:
+                        item.value = ast.Bytes(a_task_serial.read())
+                    else:
+                        item.value = ast.Str(a_task_serial.read())
         newcode = ast.fix_missing_locations(newcode)
         cobj = compile(newcode, '<string>', mode='exec')
         evalspace = {}
         try:
             self.start = datetime.datetime.now()
-            exec(cobj) in evalspace
+            six.exec_(cobj, evalspace)
             self.end = datetime.datetime.now()
         finally:
             if not self.end:

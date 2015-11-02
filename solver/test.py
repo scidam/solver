@@ -62,7 +62,7 @@ class TestBaseSolverClass(unittest.TestCase):
             default_vals={'username': 'Dmitry',
                           'total': 100, 'paper_cost': 20
                           },
-            code='''OUTPUTS['result']=INPUTS['total']/INPUTS['paper_cost']'''
+            code='''OUTPUTS['result']=int(INPUTS['total']/INPUTS['paper_cost'])'''
         )
 
         self.notsolvableproblem = Task(
@@ -94,7 +94,7 @@ class TestBaseSolverClass(unittest.TestCase):
         self.assertIsNotNone(self.solver.end)
 
     def test_async_solver(self):
-        for i in xrange(self.nasynctasks):
+        for i in range(self.nasynctasks):
             self.async_problems.append(
                 Solver(
                        Task(
@@ -105,12 +105,12 @@ class TestBaseSolverClass(unittest.TestCase):
                         default_vals={'username': 'Dmitry', 'total': 100,
                                       'paper_cost': 20},
                         code='''
-OUTPUTS['result']=INPUTS['total']/INPUTS['paper_cost']
+OUTPUTS['result']=int(INPUTS['total']/INPUTS['paper_cost'])
                         '''),
                        preamble='import time, random'
                        )
                                        )
-        for i in xrange(self.nasynctasks):
+        for i in range(self.nasynctasks):
             self.async_problems[i].async_solve()
         while not all(map(lambda x: x.is_solved, self.async_problems)):
             pass
@@ -120,7 +120,7 @@ OUTPUTS['result']=INPUTS['total']/INPUTS['paper_cost']
         self.assertEqual(self.validcodeproblem.output_vals, self.answer)
         self.assertTrue(self.solver.is_solved)
         print('Average execution time of the task is %s milliseconds' %
-              np.mean(map(lambda x: x.total, self.async_problems)))
+              np.mean(list(map(lambda x: x.total, self.async_problems))))
 
 
 class TestTaskRendererClass(unittest.TestCase):
@@ -134,7 +134,7 @@ class TestTaskRendererClass(unittest.TestCase):
                 default_vals={'username': 'Dmitry', 'total': 100,
                               'paper_cost': 20},
                 code='''
-OUTPUTS['result']=INPUTS['total']/INPUTS['paper_cost']''',
+OUTPUTS['result']=int(INPUTS['total']/INPUTS['paper_cost'])''',
                 solution_template='''Your answer is ${{result}}.'''
                                     )
         self.invalidcodeproblem = Task(

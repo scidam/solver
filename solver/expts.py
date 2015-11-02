@@ -32,6 +32,7 @@ class InappropriateSolverTypeError(AbstractSolverException):
     pass
 
 
+
 class TemplateOutputSyntaxError(AbstractRenderException):
     '''Raised if output template includes syntax errors'''
     pass

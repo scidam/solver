@@ -1,27 +1,26 @@
 # -*- coding: utf-8 -*-
 '''
-A simple problem solver.
+*A simple problem solver written in pure Python*
 
-This module provide easy way to solve various problems require
-calculations. Lets imagine one have a problem formulated in
-a text file using widespread template language. Some places
-within the problem formulation text coincide to variables,
-that have default values. What does `to solve a problem` means in this context?
-To solve a problem one need
-to define output template (used to render solution), write code
-that exploits input variables,
-setup output variables in the code and render the solution template.
+Module provides an easy way to solve various problems that require
+calculations. Lets imagine a problem formulated in
+a text file using a some template language. Some places
+within the problem formulation text coresspond to variables
+that have default values. What does `to solve a problem` mean in this context?
+To solve the problem is to 1) define output template (used to render solution), 2) write code
+that exploits input variables, 3) setup output variables in the code and, finally, 4) 
+render the solution template.
 With help of solver classes these steps of getting a problem solution
-can be easily handled.
+can be made easily.
 
 Solver features:
-    * arbitrary and independent input and output markups,
+    * arbitrary and independent input and output markups
       used in problem formulation and solution templates.
     * ability of asynchronous problem solving (Celery is required).
     * heuristic testing of problem solvability.
-    * use all of Python computational ability to solve your problems.
-    * use jinja2 template language to produce dynamic parts of problem
-      formulation / problem solution.
+    * using all of Python computational ability to solve your problems.
+    * using jinja2 template language to produce dynamic parts of a problem
+      formulation/solution.
 
 :Example:
 
@@ -59,8 +58,8 @@ Solver features:
     # solve the problem
     psolver.solve()
 
-    # or, you can try to solve problem asynchronously instead
-    # if error occur, .solve() method will be invoked by default.
+    # or you can try to solve problem asynchronously instead
+    # if error occur .solve() method will be invoked by default.
     psolver.async_solve()
 
     #Prior to get results, check for problem solution is ready
@@ -69,21 +68,23 @@ Solver features:
         task.render_outputs() # Render output template
         print(task.output) # Print renedered template or do something else
 
-
-Tested with python 2.7 and python 3.4.
 '''
 
-import six
+__all__=('Solver', 'Task', 'get_celery_worker_status')
+
 import ast
 import datetime
 import pickle
 import uuid
 import warnings
 
-from .expts import TemplateOutputSyntaxError, UnsolvableProblem
 from jinja2 import Environment, Template
 from jinja2.exceptions import TemplateSyntaxError
 from jinja2.meta import find_undeclared_variables
+import six
+
+from .expts import TemplateOutputSyntaxError, UnsolvableProblem
+
 
 if six.PY3:
     from io import BytesIO

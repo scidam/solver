@@ -1,8 +1,11 @@
 
-from .base import Solver
 import datetime
+
 from celery import Celery
-from .expts import InappropriateSolverTypeError 
+
+from .base import Solver
+from .expts import InappropriateSolverTypeError
+
 
 app = Celery()
 app.config_from_object('celeryconf')
@@ -13,7 +16,7 @@ def solve(x):
     if isinstance(x, Solver):
         x.solve()
         x.end = datetime.datetime.now()
-        return  x.task.output_vals, x.start, x.end
+        return x.task.output_vals, x.start, x.end
     else:
-        raise InappropriateSolverTypeError('Use the instances of class `Solver` instead.')
-
+        raise InappropriateSolverTypeError('Use the instances\
+ of class `Solver` instead.')

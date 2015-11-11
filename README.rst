@@ -29,9 +29,10 @@ Requirements
 ============
 
 The solver works under Python 2.7.x and Python 3.3 and higher. 
-The only requirement, a template engine:
+The only requirements:
 
 - ``jinja2``
+- ``six``
 
 
 Installation

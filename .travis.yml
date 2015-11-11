@@ -6,6 +6,5 @@ python:
     - "3.5"
 virtualenv:
     system_site_packages: true
-before_install:
-    - sudo pip install jinja2
+install: "pip install -r requirements.txt"
 script: python -m solver.tests

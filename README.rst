@@ -1,4 +1,7 @@
 
+.. image:: https://travis-ci.org/scidam/solver.svg?branch=master
+    :target: https://travis-ci.org/scidam/solver
+
 About
 =====
 

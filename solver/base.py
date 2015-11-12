@@ -133,7 +133,7 @@ class Task:
         # private properties
         self._env = Environment()
         self._templateerror = False
-        self._solution_template = solution_template
+        self.solution_template = solution_template
 
         try:
             self._allvars = find_undeclared_variables(
@@ -148,7 +148,7 @@ class Task:
 
         try:
             self._all_output_vars = find_undeclared_variables(
-                                    self._env.parse(self._solution_template))
+                                    self._env.parse(self.solution_template))
         except TemplateSyntaxError:
             self._all_output_vars = {}
             self._template_output_error = True
@@ -165,9 +165,9 @@ class Task:
 
         if not self._template_output_error and not\
                 self._all_output_vars:
-            self.output = self._solution_template
+            self.output = self.solution_template
         else:
-            temp = Template(self._solution_template)
+            temp = Template(self.solution_template)
             self.output = temp.render(**self.output_vals)
 
     def is_content_valid(self):

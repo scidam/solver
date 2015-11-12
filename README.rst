@@ -41,19 +41,17 @@ The only requirements:
 Installation
 ============
 
-::
+Install ``pysolver`` ::
 
 $ pip install python-solver
+
 
 Testing
 =======
 
-To run tests enter the command:
+To run tests enter the command: ::
 
-::
-
-python -m solver.tests
-
+$ python -m solver.tests
 
 
 Usage example
@@ -64,47 +62,55 @@ I want to buy several papers. Each paper worth is 5 $.
 How many papers can I buy?
 
 
-Test problem  (abstraction level) ::
+Test problem  (abstraction level) 
 
-    test_problem_template_formulation = """
-    My name is {{username}}. I have {{total}} $.
-    I want to buy several papers. Each paper worth is {{paper_cost}}$.
-    How many papers can I buy?
-    """
-
-    test_problem_solution_code = """
-    OUTPUTS['result']=INPUTS['total']/INPUTS['paper_cost']
-    OUTPUTS['name'] = INPUTS['username']
-    """
-    test_problem_output_template="""
-    My name is {{name}} and answer is {{result}}.
-    """
-
-    from solver import Task, Solver
-    task = Task(test_problem_template_formulation,
-                default_vals={'username': 'John',
-                'total': 100, 'paper_cost': 20},
-                solution_template=test_problem_output_template,
-                code = test_problem_solution_code
-                )
-    psolver = Solver(task)
-
-    # solve the problem
-    psolver.solve()
-
-    # or you can try to solve the problem asynchronously instead.
-    # if error occur in async_solve, 
-    # the solve() method will be invoked by default.
-    psolver.async_solve()
-
-    # Before rendering the results check the problem solution is ready
-    # (This step is required, when getting the solution asynchronously)
-    if psolver.is_solved:
-    	# Render output template
-        task.render_outputs() 
-        # Print rendered template or do something else
-        print(task.output) 
+.. code-block:: python
 
 
+	test_problem_template_formulation = """My name is {{username}}. I have {{total}} $.
+	I want to buy several papers. Each paper worth is {{paper_cost}}$.
+	How many papers can I buy?
+	"""
+	
+	test_problem_solution_code = """
+	    OUTPUTS['result']=INPUTS['total']/INPUTS['paper_cost']
+	    OUTPUTS['name'] = INPUTS['username']
+	    """
+	test_problem_output_template="""
+	    My name is {{name}} and answer is {{result}}.
+	    """
+	
+	from solver import Task, Solver
+	
+	task = Task(test_problem_template_formulation,
+	                default_vals={'username': 'John',
+	                'total': 100, 'paper_cost': 20},
+	                solution_template=test_problem_output_template,
+	                code = test_problem_solution_code
+	                )
+	
+	psolver = Solver(task)
 
 
+Solve the problem ::
+
+	$ psolver.solve()
+
+or you can try to solve the problem asynchronously instead.
+if error occur in async_solve, 
+the solve() method will be invoked by default. ::
+
+	psolver.async_solve()
+
+Before rendering the results check the problem solution is ready
+(This step is required, when getting the solution asynchronously)
+
+.. code-block:: python
+
+
+	if psolver.is_solved:
+    	task.render_outputs() 
+    	print(task.output) 
+
+
+And, finally, print rendered template or do something else.

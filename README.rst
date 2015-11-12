@@ -48,7 +48,7 @@ $ pip install python-solver
 Testing
 =======
 
-To run tests run the command:
+To run tests enter the command:
 
 ::
 
@@ -82,7 +82,7 @@ Test problem  (abstraction level) ::
 
     from solver import Task, Solver
     task = Task(test_problem_template_formulation,
-                default_vals={'username': 'Dmitry',
+                default_vals={'username': 'John',
                 'total': 100, 'paper_cost': 20},
                 solution_template=test_problem_output_template,
                 code = test_problem_solution_code

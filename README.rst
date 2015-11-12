@@ -1,9 +1,9 @@
 
-.. image:: https://travis-ci.org/scidam/solver.svg?branch=master
-    :target: https://travis-ci.org/scidam/solver
-
 About
 =====
+
+.. image:: https://travis-ci.org/scidam/solver.svg?branch=master
+    :target: https://travis-ci.org/scidam/solver
 
 *A simple problem solver written in pure Python*
 

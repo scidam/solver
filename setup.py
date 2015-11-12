@@ -6,7 +6,7 @@ def parse_requirements(filename):
 
 README_FILE = 'README.rst'
 
-setup(name='python-solver',
+setup(name='pysolver',
       packages=['solver'],
       version='0.0.1',
       description='Make a problem solution process easier',

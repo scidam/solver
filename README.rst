@@ -10,10 +10,10 @@ About
 Module provides an easy way to solve various problems that require
 calculations. Lets imagine a problem formulated in
 a text file using a some template language. Some places
-within the problem formulation text coresspond to variables
+within the problem formulation text correspond to variables
 that have default values. What does `to solve a problem` mean in this context?
 To solve the problem is to 1) define output template (used to render solution), 2) write code
-that exploits input variables, 3) setup output variables in the code and, finally, 4) 
+that exploits input variables, 3) set up output variables in the code and, finally, 4) 
 render the solution template.
 With help of solver classes these steps of getting a problem solution
 can be made easily.
@@ -23,7 +23,7 @@ Solver features:
       used in problem formulation and solution templates.
     * ability of asynchronous problem solving (Celery is required).
     * heuristic testing of problem solvability.
-    * using all of Python computational ability to solve your problems.
+    * using all of Python computational power (with third party libraries) to solve your problems.
     * using jinja2 template language to produce dynamic parts of a problem
       formulation/solution.
 
@@ -45,11 +45,21 @@ Installation
 
 $ pip install python-solver
 
+Testing
+=======
+
+To run tests run the command:
+
+::
+
+python -m solver.tests
+
+
 
 Usage example
 =============
 
-**Test problem.** My name is John. I have 100 $.
+**A simple test problem.** My name is John. I have 100 $.
 I want to buy several papers. Each paper worth is 5 $. 
 How many papers can I buy?
 

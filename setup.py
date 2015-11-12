@@ -9,7 +9,7 @@ README_FILE = 'README.rst'
 setup(name='python-solver',
       packages=['solver'],
       version='0.0.1',
-      description='Make a task solution process easy',
+      description='Make a problem solution process easier',
       keywords='Python solver, problem solver,\
 task templates,solution templates engine, computational problems, mathematics',
       long_description=open(README_FILE).read(),

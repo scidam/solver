@@ -97,7 +97,7 @@ Test problem  (abstraction level) ::
     # the solve() method will be invoked by default.
     psolver.async_solve()
 
-    # Before getting the results check problem for solution is ready
+    # Before rendering the results check the problem solution is ready
     # (This step is required, when getting the solution asynchronously)
     if psolver.is_solved:
     	# Render output template

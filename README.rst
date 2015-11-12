@@ -49,7 +49,7 @@ $ pip install python-solver
 Testing
 =======
 
-To run tests enter the command: ::
+To run tests enter the command (additionally ``numpy`` is required): ::
 
 $ python -m solver.tests
 
@@ -83,11 +83,11 @@ Test problem  (abstraction level)
 	from solver import Task, Solver
 	
 	task = Task(test_problem_template_formulation,
-	                default_vals={'username': 'John',
-	                'total': 100, 'paper_cost': 20},
-	                solution_template=test_problem_output_template,
-	                code = test_problem_solution_code
-	                )
+	            default_vals={'username': 'John',
+	            'total': 100, 'paper_cost': 20},
+	            solution_template=test_problem_output_template,
+	            code = test_problem_solution_code
+	            )
 	
 	psolver = Solver(task)
 
@@ -109,8 +109,8 @@ Before rendering the results check the problem solution is ready
 
 
 	if psolver.is_solved:
-    	task.render_outputs() 
-    	print(task.output) 
+	    task.render_outputs() 
+        print(task.output) 
 
 
 And, finally, print rendered template or do something else.

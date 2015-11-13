@@ -123,6 +123,7 @@ class Task:
 
     def __init__(self, content, solution_template='',
                  default_vals=None, code=None):
+        # TODO: code should be emptry string, not None
         # public properties
         self.content = content
         self.output = ''

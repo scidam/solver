@@ -122,8 +122,7 @@ class Task:
     '''Base class to handle a problem instance.'''
 
     def __init__(self, content, solution_template='',
-                 default_vals=None, code=None):
-        # TODO: code should be emptry string, not None
+                 default_vals=None, code=''):
         # public properties
         self.content = content
         self.output = ''

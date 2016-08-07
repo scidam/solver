@@ -3,9 +3,10 @@ from __future__ import print_function
 import unittest
 import warnings
 
+import numpy as np
+
 from .base import Task, Solver
 from .expts import TemplateOutputSyntaxError, UnsolvableProblem
-import numpy as np
 
 
 class TestBaseTaskClass(unittest.TestCase):
@@ -194,10 +195,13 @@ quasireal_formulation1 = '''
 My task
 =======
 
-Initially, I have two samples. One sample is {{sample1}} and the second is {{sample2}}. I need to perform independent t-Student test
-for these samples. Null hypotesis is the samples have the same mean values. So, I need to get p-value and t-statistic, and check basic
-assumptions for t-test, perviously. Next thing I need to do is performing test for sample normality. If all samples come from normal distribution,
-I should make T-student test and print the results. If one sample or both come from non-normal distribution, I should use one of non-parametric tests.
+I have two samples. One sample is {{sample1}} and the second is {{sample2}}. I need to perform independent t-Student test. 
+Null hypothesis states that samples have the same mean values. 
+So, I need to calculate t-statistic and p-value, but previously I need to check basic
+assumptions for t-test. Therefore I need to test the samples for normality. If all samples came
+from normal distribution,
+I should use T-student test and print the results. If one sample or both came from non-normal distribution, 
+I should use one of non-parametric tests.
 '''
 quasireal_default_vals = {'sample1': np.random.randn(100),
                           'sample2': np.random.randn(100)}
@@ -213,7 +217,7 @@ System message:
 ===============
 {{error}}
 {% else %}
- You have two samples of sizes {{sample1|length}} and {{sample2|length}}. Null hypotesis for these samples is formulated as follows: means of sample1 and sample2 are equal.
+ You have two samples of sizes {{sample1|length}} and {{sample2|length}}. Null hypotesis for these samples is formulated as follows: means of the sample1 and the sample2 are equal.
  The following scheme of statistical analysis was performed: 1) tests for normality for two samples; 2) if both samples "come" from normal distribution (hypotesis of normality wasn't rejected), 
  independent Student t-test was applied. 3) if one or both sample come from non-normal distribution, Mann-Whitney U-test was applied. 
  

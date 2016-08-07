@@ -2,15 +2,15 @@
 '''
 *A simple problem solver written in pure Python*
 
-Module provides an easy way to solve various problems that require
+Module provides an easy way to solve various problems that require some
 calculations. Lets imagine a problem formulated in
 a text file using a some template language. Some places
-within the problem formulation text coresspond to variables
+within the problem formulation text correspond to variables
 that have default values. What does `to solve a problem` mean in this context?
-To solve the problem is to 1) define output template (used to render solution), 2) write code
-that exploits input variables, 3) setup output variables in the code and, finally, 4) 
+To solve a problem is to 1) define output template (used to render solution), 2) write code
+that makes calculations on input variables, 3) setup output variables in the code and, finally, 4) 
 render the solution template.
-With help of solver classes these steps of getting a problem solution
+With help of the solver classes the steps of getting the problem solution
 can be made easily.
 
 Solver features:
@@ -106,7 +106,7 @@ def get_celery_worker_status():
         from errno import errorcode
         msg = "Error connecting to the backend: " + str(e)
         if len(e.args) > 0 and errorcode.get(e.args[0]) == 'ECONNREFUSED':
-            msg += ' Check that the RabbitMQ server is running.'
+            msg += ' Check the RabbitMQ server is running.'
         d = {ERROR_KEY: msg}
     except ImportError as e:
         d = {ERROR_KEY: str(e)}
@@ -119,7 +119,7 @@ WORKER_STATUS_ERROR = True if get_celery_worker_status().get('ERROR', False)\
 
 
 class Task:
-    '''Base class to handle a problem instance.'''
+    '''Base class to handle problem instance.'''
 
     def __init__(self, content, solution_template='',
                  default_vals=None, code=''):
@@ -175,20 +175,18 @@ class Task:
 
         if not self.content:
             return True
-
-        if self._templateerror:
+        elif self._templateerror: 
             return False
-
-        return True
+        else:
+            return True
 
     def is_state_correct(self):
-        '''Validate correctness of a problem.
+        '''Validate state correctness of the problem.
 
-        A problem treated as a correct problem, if:
+        A problem treated as correct problem, if:
             1) Content template for a problem is valid, see `is_content_valid`\
             method;
             2) All variables defined in the content has default values;
-
         '''
 
         if not self.is_content_valid():
@@ -278,8 +276,6 @@ OUTPUTS = {}
 
     def solve(self):
         '''Solve current problem.
-
-
         '''
 
         if not self.is_solvable():

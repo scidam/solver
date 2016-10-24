@@ -70,7 +70,7 @@ Solver features:
 
 '''
 
-__all__=('Solver', 'Task', 'get_celery_worker_status')
+__all__ = ('Solver', 'Task', 'get_celery_worker_status')
 
 import ast
 import datetime
